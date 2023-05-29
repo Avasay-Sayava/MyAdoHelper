@@ -1,0 +1,2 @@
+# MyAdoHelper
+MyAdoHelper, but better
