@@ -251,19 +251,6 @@ namespace SQL
     }
 
     /// <summary>
-    /// Generates a SELECT query to retrieve the URL of an image from a specified URL.
-    /// </summary>
-    /// <param name="url">The URL of the image.</param>
-    /// <returns>The SELECT query to retrieve the image URL as a string.</returns>
-    public static string Image(string url)
-    {
-      // Generate the SELECT query string to retrieve the image URL
-      string query = $"SELECT BulkColumn FROM Openrowset(Bulk '{url}', Single_Blob) AS image";
-
-      return query;
-    }
-
-    /// <summary>
     /// Formats a value based on its type to be used in SQL queries.
     /// </summary>
     /// <param name="value">The value to format.</param>
@@ -274,13 +261,13 @@ namespace SQL
       {
         return "NULL";
       }
-      else if (value is string)
+      else if (value is string str)
       {
-        return $"'{value}'";
+        return $"'{str}'";
       }
-      else if (value is DateTime dateTime)
+      else if (value is DateTime date)
       {
-        return $"CONVERT(DATETIME, '{dateTime:yyyy-MM-dd HH:mm:ss}', 120)";
+        return $"CONVERT(DATETIME, '{date:yyyy-MM-dd HH:mm:ss}', 120)";
       }
       else
       {
