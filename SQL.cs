@@ -65,30 +65,16 @@ namespace SQL
     /// </summary>
     /// <param name="sql">The SQL query to execute.</param>
     /// <returns>A two-dimensional object array containing the result of the SQL query.</returns>
-    public object[,] ExecuteQuery(string sql)
+    public object[][] ExecuteQuery(string sql)
     {
-      // Execute the SQL query and retrieve the result as a DataTable object
+      // Execute the SQL query and retrieve the result as a DataTable
       DataTable dt = ExecuteDataTable(sql);
 
-      // Initialize a two-dimensional object array to store the result
-      object[,] table = null;
+      // Initialize a object array of object arrays to store the result
+      object[][] table = new object[dt.Rows.Count][];
 
-      // Check if the SQL query returned any rows
-      if (DoesExist(sql))
-      {
-        // Create the object array with the dimensions based on the DataTable rows and columns
-        table = new object[dt.Rows.Count, dt.Columns.Count];
-
-        // Iterate through the DataTable rows and columns to populate the object array
-        for (int i = 0; i < dt.Rows.Count; i++)
-        {
-          for (int j = 0; j < dt.Columns.Count; j++)
-          {
-            // Assign the value from the DataTable to the corresponding position in the object array
-            table[i, j] = dt.Rows[i].ItemArray[j];
-          }
-        }
-      }
+      // Copy the DataRow collection into table
+      dt.Rows.CopyTo(table, 0);
 
       // Return the object array containing the result of the SQL query
       return table;
@@ -187,10 +173,10 @@ namespace SQL
       condition = condition == null ? string.Empty : $"WHERE {condition}";
 
       // Join the column names with a comma separator
-      string columnNames = string.Join(", ", columns);
+      string columnNames = string.Join(", ", columns.Select((col, index) => $"[{col}]"));
 
       // Generate the SELECT query string
-      string query = $"SELECT {columnNames} FROM {tableName} {condition}".Trim();
+      string query = $"SELECT {columnNames} FROM [{tableName}] {condition}";
 
       return query;
     }
@@ -205,13 +191,13 @@ namespace SQL
     public static string Insert(string tableName, string[] columns, object[] values)
     {
       // Join the column names with a comma separator
-      string columnNames = string.Join(", ", columns);
+      string columnNames = string.Join(", ", columns.Select((col, index) => $"[{col}]"));
 
       // Format the values as parameters
       string parameterNames = string.Join(", ", columns.Select((col, index) => FormatValue(values[index])));
 
       // Generate the INSERT query string
-      string query = $"INSERT INTO {tableName} ({columnNames}) VALUES ({parameterNames})";
+      string query = $"INSERT INTO [{tableName}] ({columnNames}) VALUES ({parameterNames})";
 
       return query;
     }
@@ -227,11 +213,11 @@ namespace SQL
     public static string Update(string tableName, string[] columns, object[] values, string condition)
     {
       // Create the SET clause with the column-value pairs
-      var updateStatements = columns.Select((col, index) => $"{col} = {FormatValue(values[index])}");
+      var updateStatements = columns.Select((col, index) => $"[{col}]={FormatValue(values[index])}");
       string setClause = string.Join(", ", updateStatements);
 
       // Generate the UPDATE query string
-      string query = $"UPDATE {tableName} SET {setClause} WHERE {condition}";
+      string query = $"UPDATE [{tableName}] SET {setClause} WHERE {condition}";
 
       return query;
     }
@@ -245,7 +231,7 @@ namespace SQL
     public static string Delete(string tableName, string condition)
     {
       // Generate the DELETE query string
-      string query = $"DELETE FROM {tableName} WHERE {condition}";
+      string query = $"DELETE FROM [{tableName}] WHERE {condition}";
 
       return query;
     }
@@ -267,7 +253,7 @@ namespace SQL
       }
       else if (value is DateTime date)
       {
-        return $"CONVERT(DATETIME, '{date:yyyy-MM-dd HH:mm:ss}', 120)";
+        return $@"'{date:dd/MM/yyyy HH:mm:ss.fff}'";
       }
       else
       {
@@ -327,30 +313,16 @@ namespace SQL
     /// <param name="sql">The SQL query to execute.</param>
     /// <param name="connStr">The connection string to use (optional). If not provided, the default connection string will be used.</param>
     /// <returns>A two-dimensional object array containing the result of the SQL query.</returns>
-    public static object[,] ExecuteQuery(string sql, string connStr = defaultConnStr)
+    public static object[][] ExecuteQuery(string sql, string connStr = defaultConnStr)
     {
-      // Execute the SQL query and retrieve the result set as a DataTable
+      // Execute the SQL query and retrieve the result as a DataTable
       DataTable dt = ExecuteDataTable(sql, connStr);
 
-      // Initialize a two-dimensional object array to store the result
-      object[,] table = null;
+      // Initialize a object array of object arrays to store the result
+      object[][] table = new object[dt.Rows.Count][];
 
-      // Check if the SQL query returned any rows
-      if (DoesExist(sql))
-      {
-        // Create the object array with the dimensions based on the DataTable rows and columns
-        table = new object[dt.Rows.Count, dt.Columns.Count];
-
-        // Iterate through the DataTable rows and columns to populate the object array
-        for (int i = 0; i < dt.Rows.Count; i++)
-        {
-          for (int j = 0; j < dt.Columns.Count; j++)
-          {
-            // Assign the value from the DataTable to the corresponding position in the object array
-            table[i, j] = dt.Rows[i].ItemArray[j];
-          }
-        }
-      }
+      // Copy the DataRow collection into table
+      dt.Rows.CopyTo(table, 0);
 
       // Return the object array containing the result of the SQL query
       return table;
