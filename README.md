@@ -25,7 +25,7 @@ Gets the `SqlConnection` object associated with this `Connection` instance. It i
 
 ### _Constructors_
 
-- `Connection(string connStr)`
+- `Connection(string? connStr)`
 Initializes a new instance of the `Connection` class with the provided connection string.
 
 - `Connection(SqlConnection conn)`
